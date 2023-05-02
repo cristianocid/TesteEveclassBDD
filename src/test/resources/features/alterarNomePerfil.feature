@@ -1,6 +1,6 @@
 Feature: Alterar Nome
   #Eu como usuário da Eveclass
-  #Quero alterar o meu Nome
+  #Quero alterar o meu nome
 
   @alterar_nome
   Scenario:Alterar nome do perfil na Eveclass
