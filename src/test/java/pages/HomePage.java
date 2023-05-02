@@ -61,7 +61,7 @@ public class HomePage{
         WebElement inputNome = driver.findElement(By.cssSelector("input[data-vv-as='Nome'][type='text']"));
         inputNome.sendKeys(Keys.CONTROL + "a");
         inputNome.sendKeys(Keys.BACK_SPACE);
-        inputNome.sendKeys("Cristiano C");
+        inputNome.sendKeys("Cristiano Cid");
     }
 
     public void clicar_no_botao_salvar(){
