@@ -28,9 +28,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
       
-    - name: Install Chromedriver
-      uses: nanake/install-chromedriver@v1.1.0
-
     - name: Build with Maven
       run: mvn clean verify
 
