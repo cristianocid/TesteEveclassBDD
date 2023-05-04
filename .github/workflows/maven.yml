@@ -1,36 +1,27 @@
-name: maven
+name: Selenium Tests
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  selenium:
+  selenium-tests:
     runs-on: ubuntu-latest
-    services:
-      xvfb:
-        image: ubuntu:latest  # <-- Specify a container image for the xvfb service
-
+    container:
+      image: selenium/standalone-chrome
+      options: --shm-size=2g
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 15
-        uses: actions/setup-java@v2
-        with:
-          java-version: '15'
-          distribution: 'adopt'
-      - name: Set up Node.js 16.x
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16.x'
-      - name: Install Chrome
-        run: |
-          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
-          sudo apt-get update && sudo apt-get install -y google-chrome-stable
-      - name: Build and Test
-        run: |
-          mvn clean test
-        env:
-          CHROME_BIN: /usr/bin/google-chrome
-          DISPLAY: :99
+    - uses: actions/checkout@v2
+    - name: Set up JDK 15
+      uses: actions/setup-java@v2
+      with:
+        java-version: '15'
+        distribution: 'adopt'
+    - name: Set up Node.js 16.x
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16.x'
+    - name: Run Selenium tests
+      run: mvn verify
+      env:
+        SELENIUM_HUB_HOST: http://localhost:4444/wd/hub
