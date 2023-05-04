@@ -1,36 +1,79 @@
-name: maven
+name: Testes Automatizados
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  selenium:
+  build:
     runs-on: ubuntu-latest
-    services:
-      xvfb:
-        image: ubuntu:latest  # <-- Specify a container image for the xvfb service
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 15
-        uses: actions/setup-java@v2
-        with:
-          java-version: '15'
-          distribution: 'adopt'
-      - name: Set up Node.js 16.x
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16.x'
-      - name: Install Chrome
-        run: |
-          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
-          sudo apt-get update && sudo apt-get install -y google-chrome-stable
-      - name: Build and Test
-        run: |
-          mvn clean test
-        env:
-          CHROME_BIN: /usr/bin/google-chrome
-          DISPLAY: :99
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup JDK 15
+      uses: actions/setup-java@v2
+      with:
+        java-version: 15
+
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+
+    - name: Build with Maven
+      run: mvn -B verify
+
+    - name: Generate Cucumber report
+      uses: reportportal/cucumber-report-action@v3.0
+      with:
+        token: ${{ secrets.REPORTPORTAL_TOKEN }}
+        endpoint: ${{ secrets.REPORTPORTAL_ENDPOINT }}
+        launch-name: "Testes Automatizados"
+        cucumber-json-report: ./target/cucumber-report.json
+        attributes: |
+          { "Release": "1.0.0" }
+
+    - name: Archive artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: cucumber-report
+        path: ./target/cucumber-report
+
+    - name: Run tests
+      env:
+        BROWSER: chrome
+      run: mvn -B test -Dtest=RunCucumberTest
+
+env:
+  CHROME_DRIVER_VERSION: 92.0.4515.107
+  GECKO_DRIVER_VERSION: v0.30.0
+  OPERA_DRIVER_VERSION: v.93
+  EDGE_DRIVER_VERSION: 92.0.902.84
+
+services:
+  chrome:
+    image: selenium/standalone-chrome:${{ env.CHROME_DRIVER_VERSION }}
+    ports:
+      - 4444:4444
+
+  firefox:
+    image: selenium/standalone-firefox:${{ env.GECKO_DRIVER_VERSION }}
+    ports:
+      - 4445:4444
+
+  opera:
+    image: selenium/standalone-opera:${{ env.OPERA_DRIVER_VERSION }}
+    ports:
+      - 4446:4444
+
+  edge:
+    image: selenium/standalone-edge:${{ env.EDGE_DRIVER_VERSION }}
+    ports:
+      - 4447:4444
