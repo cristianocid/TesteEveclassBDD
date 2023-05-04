@@ -8,7 +8,7 @@ on:
 jobs:
   selenium:
     runs-on: ubuntu-latest
-        services:
+    services:
       xvfb:
         start: true
     steps:
