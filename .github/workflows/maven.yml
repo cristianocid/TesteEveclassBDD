@@ -8,6 +8,9 @@ on:
 jobs:
   selenium:
     runs-on: ubuntu-latest
+        services:
+      xvfb:
+        start: true
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 15
@@ -30,6 +33,3 @@ jobs:
         env:
           CHROME_BIN: /usr/bin/google-chrome
           DISPLAY: :99
-        services:
-          xvfb:
-            start: true
