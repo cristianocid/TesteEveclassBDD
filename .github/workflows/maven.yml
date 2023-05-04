@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     services:
       xvfb:
-        options: --init
+        image: ubuntu:latest  # <-- Specify a container image for the xvfb service
+        start: true
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 15
