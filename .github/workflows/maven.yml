@@ -1,4 +1,4 @@
-name: Java Maven CI
+name: Java CI with Maven
 
 on: [push, pull_request]
 
@@ -7,36 +7,24 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        java-version: [11]
+        os: [ubuntu-latest]
+
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up JDK 11
+    - name: Set up JDK ${{ matrix.java-version }}
       uses: actions/setup-java@v1
       with:
-        java-version: 11
+        java-version: ${{ matrix.java-version }}
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
-    - name: Run tests
-      run: mvn test
-
-    - name: Generate Cucumber report
-      run: mvn verify
-
-    - name: Upload report
-      uses: actions/upload-artifact@v2
-      with:
-        name: cucumber-report
-        path: target/cucumber-report-html
-
-    - name: Download WebDriver
-      uses: bonigarcia/webdrivermanager-action@4.1.0
-      with:
-        browserName: chrome
-
     - name: Run tests with WebDriver
-      env:
-        WEBDRIVER_CHROME_DRIVER: ${{ env.WEBDRIVERMANAGER_CHROME_DRIVER }}
-      run: mvn test -Dwebdriver.chrome.driver=$WEBDRIVER_CHROME_DRIVER
-
+      uses: qaprosoft/maven-webdriver-plugin@v3.0.1
+      with:
+        capabilities: chrome
+        options: --cucumber-options="--plugin pretty --plugin html:target/cucumber-html-report --plugin json:target/cucumber-json-report.json --glue com.example --tags @Test"
